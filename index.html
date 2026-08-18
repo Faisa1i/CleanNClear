@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="Clean N Clear simple offline accounts and stock app">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<title>Clean N Clear — Accounts</title>
+</head>
+<body>
+<header><h1>Clean N Clear</h1><small>Simple Accounts • Offline-first</small></header>
+<nav id="nav"></nav>
+<main>
+<section id="dashboard" class="view active">
+<div class="notice warning"><b>Non-GST mode:</b> This app does not calculate or collect GST. Use it only while your business is legally operating without GST registration.</div>
+<div class="grid">
+<div class="card"><div class="label">Total Sales</div><div class="metric" id="mSales">₹0</div></div>
+<div class="card"><div class="label">Purchases</div><div class="metric" id="mPurchase">₹0</div></div>
+<div class="card"><div class="label">Expenses</div><div class="metric" id="mExpense">₹0</div></div>
+<div class="card"><div class="label">Gross Position</div><div class="metric" id="mProfit">₹0</div></div>
+</div>
+<div class="card space"><div class="section-title"><h2>Turnover Tracker</h2><span class="badge">₹40 lakh reference</span></div>
+<div class="metric" id="mTurnover">₹0</div><div class="label" id="turnText">0% of ₹40 lakh</div>
+<div class="progress"><div id="bar"></div></div></div>
+<div class="card space"><h2>Quick Actions</h2><div class="actions">
+<button class="btn" onclick="show('sales')">+ Sale</button><button class="btn" onclick="show('purchases')">+ Purchase</button><button class="btn" onclick="show('products')">+ Product</button><button class="btn secondary" onclick="show('stock')">Stock</button>
+</div></div>
+</section>
+
+<section id="products" class="view"><div class="section-title"><h2>Product Master</h2><span class="badge" id="productCount">0 products</span></div>
+<div class="card">
+<form id="productForm"><input type="hidden" id="prodId">
+<div class="formgrid">
+<div class="field"><label>Product Name *</label><input id="prodName" required placeholder="e.g. Floor Cleaner"></div>
+<div class="field"><label>Category</label><input id="prodCategory" placeholder="Housekeeping / Car Care"></div>
+<div class="field"><label>Unit</label><select id="prodUnit"><option>PCS</option><option>KG</option><option>LTR</option><option>ML</option><option>BOX</option><option>CAN</option><option>BOTTLE</option><option>PACK</option></select></div>
+<div class="field"><label>Purchase Rate</label><input id="prodPurchaseRate" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Sale Rate</label><input id="prodSaleRate" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Opening Stock</label><input id="prodOpeningStock" type="number" min="0" step="0.001" value="0"></div>
+</div>
+<div class="actions"><button class="btn" id="productSaveBtn">Save Product</button><button type="button" class="btn secondary" onclick="resetProductForm()">Clear</button></div>
+</form></div>
+<div class="card space"><input id="productSearch" class="search" placeholder="Search products..." oninput="renderProducts()">
+<div class="scroll"><table><thead><tr><th>Product</th><th>Category</th><th>Unit</th><th>Purchase</th><th>Sale</th><th>Opening</th><th></th></tr></thead><tbody id="productBody"></tbody></table></div></div>
+</section>
+
+<section id="sales" class="view">
+
+<div class="page-header">
+  <div>
+    <h2>🧾 Sales Invoices</h2>
+    <p class="muted">Create multi-product bills, edit saved bills and print anytime.</p>
+  </div>
+</div>
+
+<div class="card invoice-builder-card">
+<form id="salesForm">
+
+<div class="form-grid invoice-head-grid">
+  <div class="field"><label>Date</label><input id="sDate" type="date" required></div>
+  <div class="field"><label>Bill No.</label><input id="sBill" required placeholder="CNC/AUG26/001"></div>
+  <div class="field"><label>Customer</label><input id="sCustomer" placeholder="Cash"></div>
+</div>
+
+<div class="add-item-panel">
+<div class="form-grid">
+  <div class="field item-product-field">
+    <label>🔍 Search Product</label>
+    <input id="sProductSearch" autocomplete="off" placeholder="Type product name...">
+    <div id="sProductResults" class="product-results"></div>
+    <input type="hidden" id="sProduct">
+  </div>
+  <div class="field"><label>Qty</label><input id="sQty" type="number" min="0.001" step="0.001" value="1"></div>
+  <div class="field"><label>Rate</label><input id="sRate" type="number" min="0" step="0.01"></div>
+</div>
+<div class="selected-product-info" id="selectedProductInfo">No product selected</div>
+<div class="actions"><button type="button" class="btn primary" onclick="addSaleItem()">➕ Add Product</button></div>
+</div>
+
+<div class="invoice-items-wrap">
+<div class="invoice-items-title">
+  <b>Invoice Items</b>
+  <span id="saleItemCount" class="badge">0 Items</span>
+</div>
+<div class="table-scroll">
+<table class="invoice-items-table">
+<thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th><th>Action</th></tr></thead>
+<tbody id="saleItemsBody"></tbody>
+</table>
+</div>
+<div class="invoice-total-box"><span>Total</span><strong id="saleGrandTotal">₹0.00</strong></div>
+</div>
+
+<div class="actions">
+  <button class="btn primary" type="submit">💾 Save Invoice</button>
+  <button type="button" class="btn secondary" onclick="printCurrentInvoice()">🖨 Print Invoice</button>
+  <button type="button" class="btn danger" onclick="clearSaleForm()">✖ Clear</button>
+</div>
+</form>
+</div>
+
+<div class="card table-card">
+<div class="section-title">
+  <div><h3>📋 Saved Invoices</h3><span class="muted">Edit or print any saved invoice.</span></div>
+  <span id="invoiceCount" class="badge">0 Invoices</span>
+</div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Date</th><th>Bill No.</th><th>Customer</th><th>Items</th><th>Total</th><th>Action</th></tr></thead>
+<tbody id="invoiceBody"></tbody>
+</table>
+</div>
+</div>
+
+</section>
+
+<section id="purchases" class="view">
+<div class="page-header">
+  <div>
+    <h2>🛒 Purchase Register</h2>
+    <p class="muted">Record purchases and automatically update stock.</p>
+  </div>
+</div>
+
+<form id="purchaseForm" class="card purchase-card">
+<div class="form-grid">
+  <div class="field"><label>Date</label><input id="pDate" type="date" required></div>
+  <div class="field"><label>Supplier</label><input id="pSupplier" required placeholder="Supplier name"></div>
+  <div class="field"><label>Supplier Bill No.</label><input id="pBill" placeholder="Supplier invoice no."></div>
+
+  <div class="field item-product-field purchase-product-field">
+    <label>🔍 Search Product</label>
+    <input id="pProductSearch" autocomplete="off" placeholder="Type product name...">
+    <div id="pProductResults" class="product-results"></div>
+    <input type="hidden" id="pProduct">
+  </div>
+
+  <div class="field"><label>Qty</label><input id="pQty" type="number" min="0.001" step="0.001" value="1" required></div>
+  <div class="field"><label>Purchase Rate</label><input id="pRate" type="number" min="0" step="0.01" value="0" required></div>
+  <div class="field"><label>Total Paid</label><input id="pAmount" type="number" min="0" step="0.01" value="0" required></div>
+</div>
+
+<div class="selected-product-info" id="selectedPurchaseProductInfo">No product selected</div>
+<div class="actions">
+  <button class="btn primary" type="submit">💾 Save Purchase</button>
+  <button class="btn danger" type="button" onclick="clearPurchaseForm()">✖ Clear</button>
+</div>
+</form>
+
+<div class="card table-card">
+<div class="section-title">
+  <div><h3>📋 Purchase Register</h3><span class="muted">All purchase entries</span></div>
+  <span id="purchaseCount" class="badge">0 Purchases</span>
+</div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Date</th><th>Supplier</th><th>Bill</th><th>Product</th><th>Qty</th><th>Rate</th><th>Paid</th><th>Action</th></tr></thead>
+<tbody id="purchaseBody"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section id="expenses" class="view"><h2>Expense Register</h2>
+<form id="expenseForm" class="card"><div class="formgrid">
+<div class="field"><label>Date</label><input id="eDate" type="date" required></div><div class="field"><label>Expense</label><input id="eName" required placeholder="Transport / Rent / Packing"></div><div class="field"><label>Amount</label><input id="eAmount" type="number" min="0" step="0.01" required></div>
+</div><div class="actions"><button class="btn">Save Expense</button></div></form>
+<div class="scroll"><table><thead><tr><th>Date</th><th>Expense</th><th>Amount</th><th></th></tr></thead><tbody id="expenseBody"></tbody></table></div></section>
+
+<section id="reports" class="view">
+<div class="page-header">
+  <div>
+    <h2>📈 Reports</h2>
+    <p class="muted">Download Sales, Purchase and Expense reports in Excel format.</p>
+  </div>
+</div>
+
+<div class="card report-card">
+  <div class="form-grid">
+    <div class="field">
+      <label>Report Period</label>
+      <select id="reportPeriod">
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Reference Date</label>
+      <input id="reportDate" type="date">
+    </div>
+  </div>
+
+  <div class="notice" id="reportRangeText">
+    Weekly report: select a reference date.
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" type="button" onclick="downloadExcelReport()">
+      📥 Download Excel Report
+    </button>
+  </div>
+</div>
+
+<div class="card table-card">
+  <div class="section-title">
+    <div>
+      <h3>Report Preview</h3>
+      <span class="muted">The downloaded .xls file opens directly in Microsoft Excel / compatible spreadsheet apps.</span>
+    </div>
+  </div>
+  <div id="reportPreview"></div>
+</div>
+</section>
+
+<section id="stock" class="view"><h2>Stock</h2><div class="notice">Current stock = Opening Stock + Purchases − Sales.</div>
+<div class="scroll"><table><thead><tr><th>Product</th><th>Unit</th><th>Opening</th><th>Purchased</th><th>Sold</th><th>Current</th><th>Sale Value</th></tr></thead><tbody id="stockBody"></tbody></table></div></section>
+
+<section id="dues" class="view"><h2>Customer Dues</h2>
+<form id="dueForm" class="card"><div class="formgrid"><div class="field"><label>Customer</label><input id="dCustomer" required></div><div class="field"><label>Bill No.</label><input id="dBill"></div><div class="field"><label>Amount Due</label><input id="dAmount" type="number" min="0" step="0.01" required></div></div><div class="actions"><button class="btn">Save Due</button></div></form>
+<div class="scroll"><table><thead><tr><th>Customer</th><th>Bill</th><th>Due</th><th></th></tr></thead><tbody id="dueBody"></tbody></table></div></section>
+
+<section id="backup" class="view"><h2>Backup & Settings</h2><div class="card"><p><b>Data is stored on this browser/device.</b> Export a backup regularly.</p>
+<div class="actions"><button class="btn" onclick="exportData()">Export Backup</button><label class="btn secondary">Import Backup <input id="importFile" type="file" accept=".json" hidden></label><button class="btn danger" onclick="clearAll()">Delete All Data</button></div>
+<hr><p><b>Business:</b> Clean N Clear</p><p><b>Mode:</b> Unregistered / Non-GST accounting</p></div></section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
