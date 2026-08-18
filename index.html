@@ -1,82 +1,856 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
 <meta name="theme-color" content="#111827">
-<meta name="description" content="Clean N Clear simple offline accounts and stock app">
+<meta name="description" content="Clean N Clear Accounts and Stock Management">
+
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
+
 <title>Clean N Clear — Accounts</title>
 </head>
+
 <body>
-<header><h1>Clean N Clear</h1><small>Simple Accounts • Offline-first</small></header>
+
+<header class="top-header">
+    <div>
+        <h1>Clean N Clear</h1>
+        <small>Accounts • Products • Stock Management</small>
+    </div>
+</header>
+
 <nav id="nav"></nav>
+
 <main>
+
+<!-- ================= DASHBOARD ================= -->
+
 <section id="dashboard" class="view active">
-<div class="notice warning"><b>Non-GST mode:</b> This app does not calculate or collect GST. Use it only while your business is legally operating without GST registration.</div>
-<div class="grid">
-<div class="card"><div class="label">Total Sales</div><div class="metric" id="mSales">₹0</div></div>
-<div class="card"><div class="label">Purchases</div><div class="metric" id="mPurchase">₹0</div></div>
-<div class="card"><div class="label">Expenses</div><div class="metric" id="mExpense">₹0</div></div>
-<div class="card"><div class="label">Gross Position</div><div class="metric" id="mProfit">₹0</div></div>
-</div>
-<div class="card space"><div class="section-title"><h2>Turnover Tracker</h2><span class="badge">₹40 lakh reference</span></div>
-<div class="metric" id="mTurnover">₹0</div><div class="label" id="turnText">0% of ₹40 lakh</div>
-<div class="progress"><div id="bar"></div></div></div>
-<div class="card space"><h2>Quick Actions</h2><div class="actions">
-<button class="btn" onclick="show('sales')">+ Sale</button><button class="btn" onclick="show('purchases')">+ Purchase</button><button class="btn" onclick="show('products')">+ Product</button><button class="btn secondary" onclick="show('stock')">Stock</button>
-</div></div>
+
+    <div class="notice warning">
+        <b>Non-GST Accounting Mode:</b>
+        This application does not calculate or collect GST.
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="stat-card blue">
+            <div class="stat-icon">🧾</div>
+            <div class="label">Total Sales</div>
+            <div class="metric" id="mSales">₹0.00</div>
+        </div>
+
+        <div class="stat-card purple">
+            <div class="stat-icon">🛒</div>
+            <div class="label">Total Purchases</div>
+            <div class="metric" id="mPurchase">₹0.00</div>
+        </div>
+
+        <div class="stat-card orange">
+            <div class="stat-icon">💸</div>
+            <div class="label">Expenses</div>
+            <div class="metric" id="mExpense">₹0.00</div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-icon">📈</div>
+            <div class="label">Gross Position</div>
+            <div class="metric" id="mProfit">₹0.00</div>
+        </div>
+
+    </div>
+
+    <div class="card turnover-card">
+
+        <div class="section-title">
+
+            <div>
+                <h2>📊 Turnover Tracker</h2>
+                <span class="muted">
+                    Track your annual sales
+                </span>
+            </div>
+
+            <span class="badge">₹40 Lakh Reference</span>
+
+        </div>
+
+        <div class="turnover-number" id="mTurnover">
+            ₹0.00
+        </div>
+
+        <div class="label" id="turnText">
+            0% of ₹40 lakh
+        </div>
+
+        <div class="progress">
+            <div id="bar"></div>
+        </div>
+
+    </div>
+
+
+    <div class="card quick-card">
+
+        <h2>⚡ Quick Actions</h2>
+
+        <div class="quick-actions">
+
+            <button class="quick blue-bg" onclick="show('sales')">
+                🧾<br>
+                <span>New Sale</span>
+            </button>
+
+            <button class="quick purple-bg" onclick="show('purchases')">
+                🛒<br>
+                <span>Purchase</span>
+            </button>
+
+            <button class="quick green-bg" onclick="show('products')">
+                📦<br>
+                <span>Products</span>
+            </button>
+
+            <button class="quick orange-bg" onclick="show('stock')">
+                📊<br>
+                <span>Stock</span>
+            </button>
+
+        </div>
+
+    </div>
+
 </section>
 
-<section id="products" class="view"><div class="section-title"><h2>Product Master</h2><span class="badge" id="productCount">0 products</span></div>
-<div class="card">
-<form id="productForm"><input type="hidden" id="prodId">
-<div class="formgrid">
-<div class="field"><label>Product Name *</label><input id="prodName" required placeholder="e.g. Floor Cleaner"></div>
-<div class="field"><label>Category</label><input id="prodCategory" placeholder="Housekeeping / Car Care"></div>
-<div class="field"><label>Unit</label><select id="prodUnit"><option>PCS</option><option>KG</option><option>LTR</option><option>ML</option><option>BOX</option><option>CAN</option><option>BOTTLE</option><option>PACK</option></select></div>
-<div class="field"><label>Purchase Rate</label><input id="prodPurchaseRate" type="number" min="0" step="0.01" value="0"></div>
-<div class="field"><label>Sale Rate</label><input id="prodSaleRate" type="number" min="0" step="0.01" value="0"></div>
-<div class="field"><label>Opening Stock</label><input id="prodOpeningStock" type="number" min="0" step="0.001" value="0"></div>
-</div>
-<div class="actions"><button class="btn" id="productSaveBtn">Save Product</button><button type="button" class="btn secondary" onclick="resetProductForm()">Clear</button></div>
-</form></div>
-<div class="card space"><input id="productSearch" class="search" placeholder="Search products..." oninput="renderProducts()">
-<div class="scroll"><table><thead><tr><th>Product</th><th>Category</th><th>Unit</th><th>Purchase</th><th>Sale</th><th>Opening</th><th></th></tr></thead><tbody id="productBody"></tbody></table></div></div>
+
+<!-- ================= PRODUCTS ================= -->
+
+<section id="products" class="view">
+
+    <div class="page-header">
+
+        <div>
+            <h2>📦 Product Master</h2>
+            <p class="muted">
+                Save your products once and use them in Sales & Purchases.
+            </p>
+        </div>
+
+        <span class="badge" id="productCount">
+            0 Products
+        </span>
+
+    </div>
+
+
+    <div class="card product-form-card">
+
+        <form id="productForm">
+
+            <input type="hidden" id="prodId">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Product Name *</label>
+                    <input
+                        id="prodName"
+                        required
+                        placeholder="Example: Floor Cleaner"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Category</label>
+                    <input
+                        id="prodCategory"
+                        placeholder="Housekeeping"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Unit</label>
+
+                    <select id="prodUnit">
+
+                        <option>PCS</option>
+                        <option>KG</option>
+                        <option>LTR</option>
+                        <option>ML</option>
+                        <option>BOX</option>
+                        <option>CAN</option>
+                        <option>BOTTLE</option>
+                        <option>PACK</option>
+
+                    </select>
+
+                </div>
+
+                <div class="field">
+                    <label>Purchase Rate</label>
+                    <input
+                        id="prodPurchaseRate"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Sale Rate</label>
+                    <input
+                        id="prodSaleRate"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Opening Stock</label>
+                    <input
+                        id="prodOpeningStock"
+                        type="number"
+                        min="0"
+                        step="0.001"
+                        value="0"
+                    >
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    type="submit"
+                    class="btn primary"
+                    id="productSaveBtn"
+                >
+                    💾 Save Product
+                </button>
+
+                <button
+                    type="button"
+                    class="btn secondary"
+                    onclick="resetProductForm()"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <div class="search-row">
+
+            <input
+                id="productSearch"
+                class="search"
+                placeholder="🔍 Search products..."
+                oninput="renderProducts()"
+            >
+
+        </div>
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Unit</th>
+                        <th>Purchase</th>
+                        <th>Sale</th>
+                        <th>Opening</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="productBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
 </section>
 
-<section id="sales" class="view"><h2>Sales Register</h2>
-<form id="salesForm" class="card"><div class="formgrid">
-<div class="field"><label>Date</label><input id="sDate" type="date" required></div><div class="field"><label>Bill No.</label><input id="sBill" required placeholder="CN-0001"></div><div class="field"><label>Customer</label><input id="sCustomer" placeholder="Cash Customer"></div>
-<div class="field"><label>Product</label><select id="sProduct" required></select></div><div class="field"><label>Qty</label><input id="sQty" type="number" min="0.001" step="0.001" value="1" required></div><div class="field"><label>Rate</label><input id="sRate" type="number" min="0" step="0.01" required></div>
-</div><div class="actions"><button class="btn">Save Sale</button><button type="button" class="btn secondary" onclick="printSale()">Print Bill</button></div></form>
-<div class="scroll"><table><thead><tr><th>Date</th><th>Bill</th><th>Customer</th><th>Product</th><th>Qty</th><th>Amount</th><th></th></tr></thead><tbody id="salesBody"></tbody></table></div></section>
 
-<section id="purchases" class="view"><h2>Purchase Register</h2>
-<form id="purchaseForm" class="card"><div class="formgrid">
-<div class="field"><label>Date</label><input id="pDate" type="date" required></div><div class="field"><label>Supplier</label><input id="pSupplier" required></div><div class="field"><label>Bill No.</label><input id="pBill"></div>
-<div class="field"><label>Product</label><select id="pProduct" required></select></div><div class="field"><label>Qty</label><input id="pQty" type="number" min="0.001" step="0.001" value="1" required></div><div class="field"><label>Total Paid</label><input id="pAmount" type="number" min="0" step="0.01" required></div>
-</div><div class="actions"><button class="btn">Save Purchase</button></div></form>
-<div class="scroll"><table><thead><tr><th>Date</th><th>Supplier</th><th>Bill</th><th>Product</th><th>Qty</th><th>Paid</th><th></th></tr></thead><tbody id="purchaseBody"></tbody></table></div></section>
+<!-- ================= SALES ================= -->
 
-<section id="expenses" class="view"><h2>Expense Register</h2>
-<form id="expenseForm" class="card"><div class="formgrid">
-<div class="field"><label>Date</label><input id="eDate" type="date" required></div><div class="field"><label>Expense</label><input id="eName" required placeholder="Transport / Rent / Packing"></div><div class="field"><label>Amount</label><input id="eAmount" type="number" min="0" step="0.01" required></div>
-</div><div class="actions"><button class="btn">Save Expense</button></div></form>
-<div class="scroll"><table><thead><tr><th>Date</th><th>Expense</th><th>Amount</th><th></th></tr></thead><tbody id="expenseBody"></tbody></table></div></section>
+<section id="sales" class="view">
 
-<section id="stock" class="view"><h2>Stock</h2><div class="notice">Current stock = Opening Stock + Purchases − Sales.</div>
-<div class="scroll"><table><thead><tr><th>Product</th><th>Unit</th><th>Opening</th><th>Purchased</th><th>Sold</th><th>Current</th><th>Sale Value</th></tr></thead><tbody id="stockBody"></tbody></table></div></section>
+    <div class="page-header">
 
-<section id="dues" class="view"><h2>Customer Dues</h2>
-<form id="dueForm" class="card"><div class="formgrid"><div class="field"><label>Customer</label><input id="dCustomer" required></div><div class="field"><label>Bill No.</label><input id="dBill"></div><div class="field"><label>Amount Due</label><input id="dAmount" type="number" min="0" step="0.01" required></div></div><div class="actions"><button class="btn">Save Due</button></div></form>
-<div class="scroll"><table><thead><tr><th>Customer</th><th>Bill</th><th>Due</th><th></th></tr></thead><tbody id="dueBody"></tbody></table></div></section>
+        <div>
+            <h2>🧾 Sales Register</h2>
+            <p class="muted">
+                Record your Karnataka sales.
+            </p>
+        </div>
 
-<section id="backup" class="view"><h2>Backup & Settings</h2><div class="card"><p><b>Data is stored on this browser/device.</b> Export a backup regularly.</p>
-<div class="actions"><button class="btn" onclick="exportData()">Export Backup</button><label class="btn secondary">Import Backup <input id="importFile" type="file" accept=".json" hidden></label><button class="btn danger" onclick="clearAll()">Delete All Data</button></div>
-<hr><p><b>Business:</b> Clean N Clear</p><p><b>Mode:</b> Unregistered / Non-GST accounting</p></div></section>
+    </div>
+
+
+    <div class="card">
+
+        <form id="salesForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Date</label>
+                    <input id="sDate" type="date" required>
+                </div>
+
+                <div class="field">
+                    <label>Bill No.</label>
+                    <input
+                        id="sBill"
+                        required
+                        placeholder="CN-0001"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Customer</label>
+                    <input
+                        id="sCustomer"
+                        placeholder="Cash Customer"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Product *</label>
+
+                    <select id="sProduct" required></select>
+
+                </div>
+
+                <div class="field">
+                    <label>Quantity</label>
+                    <input
+                        id="sQty"
+                        type="number"
+                        min="0.001"
+                        step="0.001"
+                        value="1"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Sale Rate</label>
+                    <input
+                        id="sRate"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button class="btn primary">
+                    💾 Save Sale
+                </button>
+
+                <button
+                    type="button"
+                    class="btn secondary"
+                    onclick="printSale()"
+                >
+                    🖨 Print Bill
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Bill</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="salesBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= PURCHASE ================= -->
+
+<section id="purchases" class="view">
+
+    <div class="page-header">
+
+        <div>
+            <h2>🛒 Purchase Register</h2>
+            <p class="muted">
+                Record purchases including other-state purchases.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <form id="purchaseForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Date</label>
+                    <input id="pDate" type="date" required>
+                </div>
+
+                <div class="field">
+                    <label>Supplier</label>
+                    <input id="pSupplier" required>
+                </div>
+
+                <div class="field">
+                    <label>Bill No.</label>
+                    <input id="pBill">
+                </div>
+
+                <div class="field">
+                    <label>Product *</label>
+                    <select id="pProduct" required></select>
+                </div>
+
+                <div class="field">
+                    <label>Quantity</label>
+                    <input
+                        id="pQty"
+                        type="number"
+                        min="0.001"
+                        step="0.001"
+                        value="1"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Total Paid</label>
+                    <input
+                        id="pAmount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button class="btn purple">
+                    💾 Save Purchase
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Supplier</th>
+                        <th>Bill</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Paid</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="purchaseBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= EXPENSES ================= -->
+
+<section id="expenses" class="view">
+
+    <div class="page-header">
+
+        <div>
+            <h2>💸 Expense Register</h2>
+            <p class="muted">
+                Track business expenses.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <form id="expenseForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Date</label>
+                    <input id="eDate" type="date" required>
+                </div>
+
+                <div class="field">
+                    <label>Expense</label>
+                    <input
+                        id="eName"
+                        required
+                        placeholder="Transport / Rent / Packing"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Amount</label>
+                    <input
+                        id="eAmount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button class="btn orange">
+                    💾 Save Expense
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Expense</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="expenseBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= STOCK ================= -->
+
+<section id="stock" class="view">
+
+    <div class="page-header">
+
+        <div>
+            <h2>📊 Stock Management</h2>
+            <p class="muted">
+                Opening + Purchases − Sales
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="notice success">
+
+        <b>Stock Formula:</b>
+        Opening Stock + Purchased Quantity − Sold Quantity
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Product</th>
+                        <th>Unit</th>
+                        <th>Opening</th>
+                        <th>Purchased</th>
+                        <th>Sold</th>
+                        <th>Current Stock</th>
+                        <th>Stock Value</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="stockBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= DUES ================= -->
+
+<section id="dues" class="view">
+
+    <div class="page-header">
+
+        <div>
+            <h2>👥 Customer Dues</h2>
+            <p class="muted">
+                Track credit customers.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <form id="dueForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Customer</label>
+                    <input id="dCustomer" required>
+                </div>
+
+                <div class="field">
+                    <label>Bill No.</label>
+                    <input id="dBill">
+                </div>
+
+                <div class="field">
+                    <label>Amount Due</label>
+                    <input
+                        id="dAmount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button class="btn green">
+                    💾 Save Due
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="card table-card">
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Customer</th>
+                        <th>Bill</th>
+                        <th>Due</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="dueBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= BACKUP ================= -->
+
+<section id="backup" class="view">
+
+    <div class="page-header">
+
+        <div>
+            <h2>⚙️ Backup & Settings</h2>
+            <p class="muted">
+                Protect your business data.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="backup-box">
+
+            <div class="backup-icon">
+                💾
+            </div>
+
+            <h3>Data Backup</h3>
+
+            <p>
+                Your data is saved in this browser/device.
+                Export a backup regularly.
+            </p>
+
+            <div class="actions">
+
+                <button
+                    class="btn primary"
+                    onclick="exportData()"
+                >
+                    📥 Export Backup
+                </button>
+
+                <label class="btn secondary">
+                    📤 Import Backup
+                    <input
+                        id="importFile"
+                        type="file"
+                        accept=".json"
+                        hidden
+                    >
+                </label>
+
+                <button
+                    class="btn danger"
+                    onclick="clearAll()"
+                >
+                    🗑 Delete All Data
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <hr>
+
+        <div class="info-list">
+
+            <div>
+                <b>Business</b>
+                <span>Clean N Clear</span>
+            </div>
+
+            <div>
+                <b>Mode</b>
+                <span>Non-GST Accounting</span>
+            </div>
+
+            <div>
+                <b>Storage</b>
+                <span>Browser Local Storage</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
 </main>
+
 <script src="app.js"></script>
+
 </body>
 </html>
