@@ -1,0 +1,52 @@
+const KEY='clean_n_clear_accounts_v3';
+const blank={products:[],sales:[],purchases:[],expenses:[],dues:[]};
+let db=JSON.parse(localStorage.getItem(KEY)||JSON.stringify(blank));
+db.products??=[];db.sales??=[];db.purchases??=[];db.expenses??=[];db.dues??=[];
+const today=new Date().toISOString().slice(0,10);
+['sDate','pDate','eDate'].forEach(id=>document.getElementById(id).value=today);
+const navItems=[
+['dashboard','🏠 Dashboard'],
+['products','📦 Products'],
+['sales','🧾 Sales'],
+['purchases','🛒 Purchases'],
+['expenses','💸 Expenses'],
+['stock','📊 Stock'],
+['dues','👥 Dues'],
+['backup','⚙️ Backup']
+];
+nav.innerHTML=navItems.map(x=>`<button onclick="show('${x[0]}')" id="nav-${x[0]}">${x[1]}</button>`).join('');
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav-'+id).classList.add('active');render()}
+function productById(id){return db.products.find(p=>p.id===id)}
+function productOptions(selected=''){return '<option value="">Select product</option>'+db.products.map(p=>`<option value="${p.id}" ${p.id===selected?'selected':''}>${esc(p.name)} (${esc(p.unit)})</option>`).join('')}
+function refreshProductSelects(){let sv=sProduct.value,pv=pProduct.value;sProduct.innerHTML=productOptions(sv);pProduct.innerHTML=productOptions(pv);if(sv)sProduct.value=sv;if(pv)pProduct.value=pv}
+function resetProductForm(){prodId.value='';prodName.value='';prodCategory.value='';prodUnit.value='PCS';prodPurchaseRate.value=0;prodSaleRate.value=0;prodOpeningStock.value=0;productSaveBtn.textContent='Save Product'}
+productForm.onsubmit=e=>{e.preventDefault();let id=prodId.value||crypto.randomUUID();let old=productById(id);let p={id,name:prodName.value.trim(),category:prodCategory.value.trim(),unit:prodUnit.value,purchaseRate:+prodPurchaseRate.value,saleRate:+prodSaleRate.value,openingStock:+prodOpeningStock.value};if(old){let i=db.products.findIndex(x=>x.id===id);db.products[i]=p}else db.products.push(p);resetProductForm();save()}
+function editProduct(id){let p=productById(id);if(!p)return;prodId.value=p.id;prodName.value=p.name;prodCategory.value=p.category;prodUnit.value=p.unit;prodPurchaseRate.value=p.purchaseRate;prodSaleRate.value=p.saleRate;prodOpeningStock.value=p.openingStock;productSaveBtn.textContent='Update Product';show('products')}
+function deleteProduct(id){let used=db.sales.some(x=>x.productId===id)||db.purchases.some(x=>x.productId===id);if(used){alert('This product is already used in sales/purchases. Keep it and mark it inactive instead.');return}if(confirm('Delete this product?')){db.products=db.products.filter(p=>p.id!==id);save()}}
+sProduct.onchange=()=>{let p=productById(sProduct.value);if(p)sRate.value=p.saleRate||0}
+pProduct.onchange=()=>{let p=productById(pProduct.value);if(p)pAmount.value=(p.purchaseRate||0)*(+pQty.value||1)}
+pQty.oninput=()=>{let p=productById(pProduct.value);if(p)pAmount.value=(p.purchaseRate||0)*(+pQty.value||1)}
+salesForm.onsubmit=e=>{e.preventDefault();let p=productById(sProduct.value);if(!p){alert('Please create/select a product first.');return}let q=+sQty.value,r=+sRate.value;db.sales.push({id:crypto.randomUUID(),date:sDate.value,bill:sBill.value,customer:sCustomer.value||'Cash Customer',productId:p.id,product:p.name,qty:q,amount:q*r});e.target.reset();sDate.value=today;sQty.value=1;refreshProductSelects();save()}
+purchaseForm.onsubmit=e=>{e.preventDefault();let p=productById(pProduct.value);if(!p){alert('Please create/select a product first.');return}db.purchases.push({id:crypto.randomUUID(),date:pDate.value,supplier:pSupplier.value,bill:pBill.value,productId:p.id,product:p.name,qty:+pQty.value,amount:+pAmount.value});e.target.reset();pDate.value=today;pQty.value=1;refreshProductSelects();save()}
+expenseForm.onsubmit=e=>{e.preventDefault();db.expenses.push({id:crypto.randomUUID(),date:eDate.value,name:eName.value,amount:+eAmount.value});e.target.reset();eDate.value=today;save()}
+dueForm.onsubmit=e=>{e.preventDefault();db.dues.push({id:crypto.randomUUID(),customer:dCustomer.value,bill:dBill.value,amount:+dAmount.value});e.target.reset();save()}
+function del(type,id){if(confirm('Delete this entry?')){db[type]=db[type].filter(x=>x.id!==id);save()}}
+function renderProducts(){let q=(productSearch.value||'').toLowerCase();let list=db.products.filter(p=>(p.name+' '+p.category).toLowerCase().includes(q));productCount.textContent=db.products.length+' product'+(db.products.length===1?'':'s');productBody.innerHTML=list.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.category)}</td><td>${esc(p.unit)}</td><td>${money(p.purchaseRate)}</td><td>${money(p.saleRate)}</td><td>${p.openingStock}</td><td><button class="btn small secondary" onclick="editProduct('${p.id}')">Edit</button> <button class="btn small danger" onclick="deleteProduct('${p.id}')">×</button></td></tr>`).join('');refreshProductSelects()}
+function render(){
+let sales=db.sales.reduce((a,x)=>a+x.amount,0),pur=db.purchases.reduce((a,x)=>a+x.amount,0),exp=db.expenses.reduce((a,x)=>a+x.amount,0);
+mSales.textContent=money(sales);mPurchase.textContent=money(pur);mExpense.textContent=money(exp);mProfit.textContent=money(sales-pur-exp);mTurnover.textContent=money(sales);let pct=Math.min(100,sales/4000000*100);turnText.textContent=pct.toFixed(1)+'% of ₹40 lakh';bar.style.width=pct+'%';
+salesBody.innerHTML=db.sales.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.bill)}</td><td>${esc(x.customer)}</td><td>${esc(x.product)}</td><td>${x.qty}</td><td>${money(x.amount)}</td><td><button class="btn small danger" onclick="del('sales','${x.id}')">×</button></td></tr>`).join('');
+purchaseBody.innerHTML=db.purchases.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.supplier)}</td><td>${esc(x.bill)}</td><td>${esc(x.product)}</td><td>${x.qty}</td><td>${money(x.amount)}</td><td><button class="btn small danger" onclick="del('purchases','${x.id}')">×</button></td></tr>`).join('');
+expenseBody.innerHTML=db.expenses.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.name)}</td><td>${money(x.amount)}</td><td><button class="btn small danger" onclick="del('expenses','${x.id}')">×</button></td></tr>`).join('');
+dueBody.innerHTML=db.dues.map(x=>`<tr><td>${esc(x.customer)}</td><td>${esc(x.bill)}</td><td>${money(x.amount)}</td><td><button class="btn small danger" onclick="del('dues','${x.id}')">×</button></td></tr>`).join('');
+let stock=db.products.map(p=>{let purq=db.purchases.filter(x=>x.productId===p.id).reduce((a,x)=>a+x.qty,0),sq=db.sales.filter(x=>x.productId===p.id).reduce((a,x)=>a+x.qty,0),cur=p.openingStock+purq-sq;return {p,purq,sq,cur}});stockBody.innerHTML=stock.map(x=>`<tr><td><b>${esc(x.p.name)}</b></td><td>${esc(x.p.unit)}</td><td>${x.p.openingStock}</td><td>${x.purq}</td><td>${x.sq}</td><td><b>${x.cur}</b></td><td>${money(x.cur*x.p.saleRate)}</td></tr>`).join('');
+renderProducts()
+}
+function exportData(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='Clean_N_Clear_backup_'+today+'.json';a.click()}
+importFile.onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.products||!x.sales)throw 0;db=x;save();alert('Backup imported.')}catch{alert('Invalid backup file.')}};r.readAsText(f)}
+function clearAll(){if(confirm('DELETE ALL data? Keep a backup first.')){db={...blank,products:[],sales:[],purchases:[],expenses:[],dues:[]};save()}}
+function printSale(){let p=productById(sProduct.value);if(!p){alert('Select a product first.');return}let q=+sQty.value,r=+sRate.value,total=q*r;let w=window.open('','_blank');w.document.write(`<html><head><title>${esc(sBill.value)}</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px;text-align:left}</style></head><body><h2>Clean N Clear</h2><p>Sale Bill: ${esc(sBill.value)}<br>Date: ${esc(sDate.value)}<br>Customer: ${esc(sCustomer.value||'Cash Customer')}</p><table><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th></tr><tr><td>${esc(p.name)}</td><td>${q} ${esc(p.unit)}</td><td>${money(r)}</td><td>${money(total)}</td></tr></table><h3>Total: ${money(total)}</h3><p>GST not charged — seller is not registered under GST.</p><script>window.print()<\/script></body></html>`);w.document.close()}
+show('dashboard');
